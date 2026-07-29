@@ -2,6 +2,8 @@ module github.com/vendorchain/chaincode
 
 go 1.26.2
 
+require github.com/hyperledger/fabric-contract-api-go v1.2.2
+
 require (
 	github.com/go-openapi/jsonpointer v0.20.0 // indirect
 	github.com/go-openapi/jsonreference v0.20.2 // indirect

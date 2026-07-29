@@ -1,3 +1,10 @@
+# Ignore Go vendor directory
+/chaincode/vendor/
+**/vendor/
+
+# Ignore test-network channel artifacts and crypto material
+/channel-artifacts/
+/organizations/
 # Ignore Hyperledger Fabric binaries
 /bin/
 /builders/
