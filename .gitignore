@@ -5,6 +5,13 @@
 # Ignore test-network channel artifacts and crypto material
 /channel-artifacts/
 /organizations/
+# cosign private key - NEVER commit this
+keys/cosign.key
+keys/*.key
+
+# environment files
+.env
+*.env
 # Ignore Hyperledger Fabric binaries
 /bin/
 /builders/
