@@ -1,1 +1,1 @@
-VendorChain — Blockchain-powered supply chain security
+VendorChain — Blockchain-powered supply chain security 
