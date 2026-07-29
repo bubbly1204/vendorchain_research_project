@@ -12,3 +12,9 @@ keys/*.key
 # environment files
 .env
 *.env
+# Ignore Hyperledger Fabric binaries
+/bin/
+/builders/
+
+# Ignore compiled executables
+*.exe
