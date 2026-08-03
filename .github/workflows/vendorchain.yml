@@ -82,7 +82,7 @@ jobs:
 
           opa_input = {
               "vendor_id": "pipeline-test",
-              "vendor_certificate_status": "approved",
+              "vendor_certificate_status": "pending",   # temporarily changed
               "signature_verified": True,
               "sbom_hash": "${{ env.SBOM_HASH }}",
               "timestamp": datetime.utcnow().isoformat() + "Z",
