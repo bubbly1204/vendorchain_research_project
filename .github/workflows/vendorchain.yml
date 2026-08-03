@@ -96,53 +96,38 @@ jobs:
           PYEOF
 
       - name: Run OPA policy evaluation
+        id: opa
         run: |
+          # 1. Run OPA evaluation with raw format
           RESULT=$(opa eval \
-            --input outputs/opa_input.json \
+            --input /tmp/opa_input.json \
             --data policies/vendorchain.rego \
             "data.vendorchain.summary" \
             --format raw)
 
-          echo "OPA_RESULT=$RESULT" >> $GITHUB_ENV
+          # 2. Safely parse values (supports raw JSON output without crashing)
+          ALLOW=$(echo "$RESULT" | python3 -c "import json,sys; data=json.load(sys.stdin); print(data.get('allow', False))")
+          RISK=$(echo "$RESULT" | python3 -c "import json,sys; data=json.load(sys.stdin); print(data.get('risk_level', 'unknown'))")
+          COUNT=$(echo "$RESULT" | python3 -c "import json,sys; data=json.load(sys.stdin); print(data.get('component_count', 0))")
+          REASONS=$(echo "$RESULT" | python3 -c "import json,sys; data=json.load(sys.stdin); reasons=data.get('denial_reasons',[]); print(', '.join(reasons))")
 
-          ALLOW=$(echo $RESULT | python3 -c "
-          import json,sys
-          data=json.load(sys.stdin)
-          val=data['result'][0]['expressions'][0]['value']
-          print(val['allow'])
-          ")
-
-          REASONS=$(echo $RESULT | python3 -c "
-          import json,sys
-          data=json.load(sys.stdin)
-          val=data['result'][0]['expressions'][0]['value']
-          reasons=val.get('denial_reasons',[])
-          for r in reasons:
-              print(' -',r)
-          ")
-
-          RISK=$(echo $RESULT | python3 -c "
-          import json,sys
-          data=json.load(sys.stdin)
-          val=data['result'][0]['expressions'][0]['value']
-          print(val.get('risk_level','unknown'))
-          ")
-
+          # 3. Export to GitHub Actions outputs/environment
           echo "OPA_ALLOW=$ALLOW" >> $GITHUB_ENV
           echo "OPA_RISK=$RISK" >> $GITHUB_ENV
+          echo "OPA_COUNT=$COUNT" >> $GITHUB_ENV
 
           echo "================================================"
-          echo "   OPA Policy Evaluation Result"
+          echo "   VendorChain OPA Policy Result"
           echo "================================================"
-          echo "Allow  : $ALLOW"
-          echo "Risk   : $RISK"
-          echo "Reasons: $REASONS"
-          echo "================================================"
+          echo "Components   : $COUNT"
+          echo "Risk Level   : $RISK"
+          echo "Allow        : $ALLOW"
 
-          if [ "$ALLOW" != "True" ]; then
-            echo "PIPELINE BLOCKED by OPA policy"
-            echo "Denial reasons:"
-            echo "$REASONS"
+          if [ "$ALLOW" = "True" ] || [ "$ALLOW" = "true" ]; then
+            echo "VERDICT      : ✓ PASS"
+          else
+            echo "VERDICT      : ✗ FAIL"
+            echo "Denial Reasons: $REASONS"
             exit 1
           fi
 
