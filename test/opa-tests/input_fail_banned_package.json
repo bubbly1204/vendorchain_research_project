@@ -1,0 +1,22 @@
+{
+  "vendor_id": "vendor005",
+  "vendor_certificate_status": "approved",
+  "signature_verified": true,
+  "sbom_hash": "abc123",
+  "timestamp": "2026-07-27T10:00:00Z",
+  "sbom": {
+    "bomFormat": "CycloneDX",
+    "specVersion": "1.4",
+    "metadata": {
+      "component": {
+        "name": "suspicious-product",
+        "version": "1.0.0"
+      }
+    },
+    "components": [
+      {"name": "express", "version": "4.18.2"},
+      {"name": "cryptominer", "version": "1.0.0"},
+      {"name": "axios", "version": "1.4.0"}
+    ]
+  }
+}

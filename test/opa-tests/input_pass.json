@@ -1,0 +1,24 @@
+{
+  "vendor_id": "vendor001",
+  "vendor_certificate_status": "approved",
+  "signature_verified": true,
+  "sbom_hash": "a3f2bc91d4e7f123456789abcdef0123456789abcdef0123456789abcdef0123",
+  "timestamp": "2026-07-27T10:00:00Z",
+  "sbom": {
+    "bomFormat": "CycloneDX",
+    "specVersion": "1.4",
+    "metadata": {
+      "component": {
+        "name": "sample-vendor-product",
+        "version": "1.0.0"
+      }
+    },
+    "components": [
+      {"name": "express", "version": "4.18.2"},
+      {"name": "lodash", "version": "4.17.21"},
+      {"name": "axios", "version": "1.4.0"},
+      {"name": "dotenv", "version": "16.0.3"},
+      {"name": "body-parser", "version": "1.20.2"}
+    ]
+  }
+}

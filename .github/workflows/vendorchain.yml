@@ -64,6 +64,90 @@ jobs:
             outputs/sbom.json
           echo "Signature verified — SBOM is genuine and untampered"
 
+      - name: Install OPA
+        run: |
+          curl -L -o opa https://openpolicyagent.org/downloads/latest/opa_linux_amd64_static
+          sudo mv opa /usr/local/bin/opa
+          sudo chmod +x /usr/local/bin/opa
+          opa version
+
+      - name: Build OPA input from SBOM
+        run: |
+          python3 - << 'PYEOF'
+          import json
+          from datetime import datetime
+
+          with open("outputs/sbom.json", "r") as f:
+              sbom_data = json.load(f)
+
+          opa_input = {
+              "vendor_id": "pipeline-test",
+              "vendor_certificate_status": "approved",
+              "signature_verified": True,
+              "sbom_hash": "${{ env.SBOM_HASH }}",
+              "timestamp": datetime.utcnow().isoformat() + "Z",
+              "sbom": sbom_data
+          }
+
+          with open("outputs/opa_input.json", "w") as f:
+              json.dump(opa_input, f, indent=2)
+
+          print("OPA input file created")
+          PYEOF
+
+      - name: Run OPA policy evaluation
+        run: |
+          RESULT=$(opa eval \
+            --input outputs/opa_input.json \
+            --data policies/vendorchain.rego \
+            "data.vendorchain.summary" \
+            --format raw)
+
+          echo "OPA_RESULT=$RESULT" >> $GITHUB_ENV
+
+          ALLOW=$(echo $RESULT | python3 -c "
+          import json,sys
+          data=json.load(sys.stdin)
+          val=data['result'][0]['expressions'][0]['value']
+          print(val['allow'])
+          ")
+
+          REASONS=$(echo $RESULT | python3 -c "
+          import json,sys
+          data=json.load(sys.stdin)
+          val=data['result'][0]['expressions'][0]['value']
+          reasons=val.get('denial_reasons',[])
+          for r in reasons:
+              print(' -',r)
+          ")
+
+          RISK=$(echo $RESULT | python3 -c "
+          import json,sys
+          data=json.load(sys.stdin)
+          val=data['result'][0]['expressions'][0]['value']
+          print(val.get('risk_level','unknown'))
+          ")
+
+          echo "OPA_ALLOW=$ALLOW" >> $GITHUB_ENV
+          echo "OPA_RISK=$RISK" >> $GITHUB_ENV
+
+          echo "================================================"
+          echo "   OPA Policy Evaluation Result"
+          echo "================================================"
+          echo "Allow  : $ALLOW"
+          echo "Risk   : $RISK"
+          echo "Reasons: $REASONS"
+          echo "================================================"
+
+          if [ "$ALLOW" != "True" ]; then
+            echo "PIPELINE BLOCKED by OPA policy"
+            echo "Denial reasons:"
+            echo "$REASONS"
+            exit 1
+          fi
+
+          echo "OPA policy passed - proceeding to blockchain recording"
+
       - name: Clean up keys from runner
         run: |
           rm -f /tmp/cosign.key /tmp/cosign.pub
@@ -76,6 +160,7 @@ jobs:
           path: |
             outputs/sbom.json
             outputs/sbom.json.bundle
+            outputs/opa_input.json
           retention-days: 30
 
       - name: Print pipeline summary
@@ -86,5 +171,7 @@ jobs:
           echo "Branch    : ${{ github.ref_name }}"
           echo "Commit    : ${{ github.sha }}"
           echo "SBOM Hash : ${{ env.SBOM_HASH }}"
+          echo "OPA Verdict : ${{ env.OPA_ALLOW }}"
+          echo "Risk Level  : ${{ env.OPA_RISK }}"
           echo "Status    : PASSED"
           echo "================================================"
