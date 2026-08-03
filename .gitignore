@@ -5,9 +5,15 @@
 # Ignore test-network channel artifacts and crypto material
 /channel-artifacts/
 /organizations/
-# cosign private key - NEVER commit this
+# Generated outputs - recreated by pipeline
+outputs/sbom_*.json
+outputs/sbom_*.bundle
+outputs/*.sig
+
+# cosign private key
 keys/cosign.key
 keys/*.key
+keys/*.b64
 
 # environment files
 .env

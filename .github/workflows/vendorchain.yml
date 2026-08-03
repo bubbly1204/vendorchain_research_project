@@ -1,0 +1,90 @@
+name: VendorChain Security Pipeline
+
+on:
+  push:
+    branches: [developer]
+  pull_request:
+    branches: [developer]
+
+jobs:
+  security-pipeline:
+    name: SBOM Generation and Signing
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Syft
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+          syft version
+
+      - name: Generate SBOM
+        run: |
+          mkdir -p outputs
+          syft scan . -o cyclonedx-json=outputs/sbom.json
+          echo "SBOM generated successfully"
+          cat outputs/sbom.json | python3 -c "import json,sys; data=json.load(sys.stdin); print(f'Components found: {len(data[\"components\"])}')"
+
+      - name: Compute SBOM hash
+        run: |
+          SBOM_HASH=$(sha256sum outputs/sbom.json | cut -d' ' -f1)
+          echo "SBOM_HASH=$SBOM_HASH" >> $GITHUB_ENV
+          echo "SBOM SHA256: $SBOM_HASH"
+
+      - name: Install cosign
+        run: |
+          curl -O -L "https://github.com/sigstore/cosign/releases/latest/download/cosign-linux-amd64"
+          sudo mv cosign-linux-amd64 /usr/local/bin/cosign
+          sudo chmod +x /usr/local/bin/cosign
+          cosign version
+
+      - name: Write cosign keys from secrets
+        run: |
+          echo "${{ secrets.COSIGN_PRIVATE_KEY }}" | base64 -d > /tmp/cosign.key
+          echo "${{ secrets.COSIGN_PUBLIC_KEY }}" > /tmp/cosign.pub
+
+      - name: Sign SBOM
+        env:
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+        run: |
+          cosign sign-blob \
+            --key /tmp/cosign.key \
+            --bundle outputs/sbom.json.bundle \
+            --new-bundle-format \
+            outputs/sbom.json
+          echo "SBOM signed successfully"
+
+      - name: Verify SBOM signature
+        run: |
+          cosign verify-blob \
+            --key /tmp/cosign.pub \
+            --bundle outputs/sbom.json.bundle \
+            outputs/sbom.json
+          echo "Signature verified — SBOM is genuine and untampered"
+
+      - name: Clean up keys from runner
+        run: |
+          rm -f /tmp/cosign.key /tmp/cosign.pub
+          echo "Keys removed from runner"
+
+      - name: Upload SBOM and bundle as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: vendorchain-sbom-${{ github.sha }}
+          path: |
+            outputs/sbom.json
+            outputs/sbom.json.bundle
+          retention-days: 30
+
+      - name: Print pipeline summary
+        run: |
+          echo "================================================"
+          echo "   VendorChain Pipeline Summary"
+          echo "================================================"
+          echo "Branch    : ${{ github.ref_name }}"
+          echo "Commit    : ${{ github.sha }}"
+          echo "SBOM Hash : ${{ env.SBOM_HASH }}"
+          echo "Status    : PASSED"
+          echo "================================================"
