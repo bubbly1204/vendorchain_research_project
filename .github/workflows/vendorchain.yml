@@ -100,7 +100,7 @@ jobs:
         run: |
           # 1. Run OPA evaluation with raw format
           RESULT=$(opa eval \
-            --input /tmp/opa_input.json \
+            --input outputs/opa_input.json \
             --data policies/vendorchain.rego \
             "data.vendorchain.summary" \
             --format raw)
