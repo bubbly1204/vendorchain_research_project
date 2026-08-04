@@ -18,3 +18,7 @@ keys/*.b64
 # environment files
 .env
 *.env
+
+# Ignore node_modules directories
+node_modules/
+backend/node_modules/

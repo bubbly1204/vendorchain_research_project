@@ -133,6 +133,34 @@ jobs:
 
           echo "OPA policy passed - proceeding to blockchain recording"
 
+      - name: Save pipeline result to Supabase
+        if: always()
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ "${{ env.OPA_ALLOW }}" = "True" ]; then
+            RESULT="PASS"
+          else
+            RESULT="FAIL"
+          fi
+
+          curl -s -X POST "$SUPABASE_URL/rest/v1/pipeline_runs" \
+            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: return=minimal" \
+            -d "{
+              \"commit_sha\": \"${{ github.sha }}\",
+              \"branch\": \"${{ github.ref_name }}\",
+              \"sbom_hash\": \"${{ env.SBOM_HASH }}\",
+              \"opa_result\": \"$RESULT\",
+              \"risk_level\": \"${{ env.OPA_RISK }}\",
+              \"status\": \"pipeline_complete\"
+            }"
+
+          echo "Pipeline result saved to Supabase — OPA result: $RESULT"
+
       - name: Clean up keys from runner
         run: |
           rm -f /tmp/cosign.key /tmp/cosign.pub
