@@ -160,6 +160,66 @@ func (s *SmartContract) GetAuditHistory(
 	return string(historyJSON), nil
 }
 
+// Purchase stores a customer purchase transaction on the blockchain
+type Purchase struct {
+	PurchaseID string `json:"purchaseID"`
+	CustomerID string `json:"customerID"`
+	ProductID  string `json:"productID"`
+	VendorID   string `json:"vendorID"`
+	Amount     string `json:"amount"`
+	Timestamp  string `json:"timestamp"`
+}
+
+// RecordPurchase saves a customer purchase permanently to the blockchain
+func (s *SmartContract) RecordPurchase(
+	ctx contractapi.TransactionContextInterface,
+	purchaseID string,
+	customerID string,
+	productID string,
+	vendorID string,
+	amount string,
+) error {
+
+	purchase := Purchase{
+		PurchaseID: purchaseID,
+		CustomerID: customerID,
+		ProductID:  productID,
+		VendorID:   vendorID,
+		Amount:     amount,
+		Timestamp:  time.Now().Format(time.RFC3339),
+	}
+
+	purchaseJSON, err := json.Marshal(purchase)
+	if err != nil {
+		return fmt.Errorf("failed to convert purchase to JSON: %v", err)
+	}
+
+	return ctx.GetStub().PutState(purchaseID, purchaseJSON)
+}
+
+// QueryPurchase retrieves a purchase record from the blockchain by its ID
+func (s *SmartContract) QueryPurchase(
+	ctx contractapi.TransactionContextInterface,
+	purchaseID string,
+) (*Purchase, error) {
+
+	purchaseJSON, err := ctx.GetStub().GetState(purchaseID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read purchase %s: %v", purchaseID, err)
+	}
+	if purchaseJSON == nil {
+		return nil, fmt.Errorf("purchase %s does not exist", purchaseID)
+	}
+
+	var purchase Purchase
+	err = json.Unmarshal(purchaseJSON, &purchase)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse purchase data: %v", err)
+	}
+
+	return &purchase, nil
+}
+
 // main is the entry point — this starts the chaincode
 func main() {
 	chaincode, err := contractapi.NewChaincode(&SmartContract{})
