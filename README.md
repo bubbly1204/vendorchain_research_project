@@ -1,220 +1,246 @@
-```markdown
-# VendorChain — Zero-Trust OS (v1.0.0)
+# 🛡️ VendorChain — Zero-Trust OS
 
-> **"Never Trust. Always Verify. Continuously Monitor."**  
-> `Next.js 14` · `TypeScript Strict` · `Vite 5` · `PostgreSQL 15` · `Redis 7` · `44 Tests (100% Green)` · `MIT License`
+```
+╔═══════════════════════════════════════════════════════════════════════════════════╗
+║  "Never Trust. Always Verify. Continuously Monitor."                              ║
+║  Enterprise B2B Vendor Verification & Cryptographic Supply Chain Integrity        ║
+╚═══════════════════════════════════════════════════════════════════════════════════╝
+```
 
----
-
-## 1. Problem → Answer
-
-Traditional B2B vendor onboarding relies on static, assumed trust: vendors upload unverified certificates, sensitive tax credentials sit in plaintext across S3 buckets, and internal administrators possess unchecked, unaudited read access. A single forged document or compromised credential breaches the entire supply chain.
-
-VendorChain enforces Zero-Trust at the exact boundary of intake:
-1. **Never Trust**: Documents are validated by magic byte headers, encrypted via AES-256-GCM envelope keys before touching disk, and cross-checked against registered credentials using in-memory OCR.
-2. **Always Verify**: Verification is deterministic (Luhn Mod-36 GSTIN algorithm), running through an asynchronous queue with automatic retries and dead-letter routing.
-3. **Continuously Monitor**: Every state transition and every decrypted byte access is permanently logged as an immutable, append-only `VerificationEvent`.
+> **Framework:** Next.js 14 & Vite 5 &nbsp;|&nbsp; **Language:** TypeScript (Strict) &nbsp;|&nbsp; **Storage:** PostgreSQL 15 & Redis 7 &nbsp;|&nbsp; **Tests:** 44/44 Green &nbsp;|&nbsp; **License:** MIT
 
 ---
 
-## 2. What's Inside
+## ⚡ 1. Problem → Answer
 
+**The Vulnerability of Assumed Trust**  
+Modern B2B software supply chains operate on blind faith. Vendors upload unauthenticated tax certificates, sensitive permanent account numbers (PANs) reside unencrypted in object storage, and internal platform administrators possess unrestricted, unaudited access to raw identity files. A single forged document or insider breach compromises the entire enterprise perimeter.
+
+**The Zero-Trust Architecture**  
+VendorChain terminates assumed trust at the intake perimeter:
+- 🔒 **Cryptographic Ingestion**: Files are inspected by raw magic byte signatures, encrypted via dedicated AES-256-GCM envelope keys before touching disk, and cross-referenced against official credentials using in-memory OCR extraction.
+- 📐 **Deterministic Validation**: Verification executes mathematically via the Indian GSTIN Luhn Mod-36 algorithm inside an asynchronous queue with automatic retries and dead-letter fault isolation.
+- 📜 **Immutable Accountability**: Every state transition and every decrypted document access appends a non-repudiable, tamper-evident `VerificationEvent` to the audit ledger.
+
+---
+
+## 📂 2. Repository Blueprint
+
+```
 landing-page-/
-├── index.html                # Static Vite landing (CSP enabled, DEMO verifier, accessible capture form)
-├── 404.html                  # Branded Zero-Trust error recovery route
-├── css/style.css             # Dark premium tokens (--bg #050507, --blue #00E5FF, 0 inline styles)
-├── js/app.js                 # Verifier sandbox & early-access submission pipeline
-├── CHANGELOG.md              # Landing hardening log with verification proofs
-├── SECURITY.md               # Production host headers & CSP checklist
-└── platform/                 # Zero-Trust Onboarding Engine (Module 1, Slices 1–3)
-    ├── docker-compose.yml    # PostgreSQL 15 + Redis 7 + MinIO (local S3 dev emulation)
-    ├── prisma/schema.prisma  # Vendor, Document, VerificationEvent models
-    ├── src/app/api/          # Next.js 14 App Router API endpoints
-    ├── src/lib/              # Crypto (AES-256-GCM), StorageDriver, OCR, Queue (BullMQ)
-    └── src/tests/            # 12 test suites (44 tests, 100% passing)
+├── 🌐 index.html                 # Dark Web3 Landing Page (Strict CSP, 0 Inline Styles)
+├── 🛑 404.html                   # Zero-Trust Error Recovery Route
+├── 🎨 css/style.css              # Design System Tokens (--bg: #050507, --blue: #00E5FF)
+├── ⚡ js/app.js                  # Labeled DEMO Verifier & Early Access Capture Pipeline
+├── 📋 CHANGELOG.md               # Phased Verification Changelog
+├── 🔐 SECURITY.md                # Production Headers & CSP Implementation Guide
+└── 🏢 platform/                  # Core Zero-Trust Onboarding Engine (Module 1, Slices 1–3)
+    ├── 🐳 docker-compose.yml     # PostgreSQL 15 + Redis 7 + MinIO (S3 Emulation)
+    ├── 🗄️ prisma/schema.prisma   # Vendor, Document, and VerificationEvent Schemas
+    ├── 🚀 src/app/api/           # Next.js 14 REST API Route Handlers
+    ├── 🧩 src/lib/               # Crypto (Envelope/GCM), OCR, Queue, Storage Drivers
+    └── 🧪 src/tests/             # 12 Test Suites (44 Comprehensive Tests)
+```
 
 ---
 
-## 3. Feature Matrix
+## 📊 3. Feature Matrix
 
-| Feature | Description | Status |
-|---|---|---|
-| **Vendor Registration** | Zod-validated 15-char GSTIN & 10-char PAN intake with cross-consistency checks. | ✅ Shipped |
-| **Magic-Byte Gating** | Rejects renamed executables (`.exe-as-.pdf`); validates `%PDF-`, `\x89PNG`, `\xFF\xD8\xFF`. | ✅ Shipped |
-| **Envelope Encryption** | Random 256-bit DEK per doc, wrapped with 256-bit Master KEK via AES-256-GCM. | ✅ Shipped |
-| **Masked-PII Reads** | PAN encrypted at rest (`iv:tag:ciphertext`); API returns `AB******4F`. | ✅ Shipped |
-| **Deterministic Sandbox** | Official Luhn Mod-36 GST checksum validation; stamps `evidence.sandbox: true`. | 🧪 Sandbox |
-| **Async Queue & DLQ** | BullMQ + Redis queue with concurrency 2, 3 exponential retries, and DLQ routing. | ✅ Shipped |
-| **OCR Forgery Detection** | In-memory text extraction; credential mismatches trigger `FLAGGED` state. | ✅ Shipped |
-| **Audited Byte Retrieval** | `GET .../bytes` streams decrypted data and appends an immutable `ADMIN_READ` event. | ✅ Shipped |
-| **Multi-Actor Attribution** | `ADMIN_KEYS` JSON mapping attributes actions to `admin:<keyName>` (never logs key). | ✅ Shipped |
-| **Fail-Closed Boot Guard** | `NODE_ENV=production` without reachable Redis halts boot immediately. | ✅ Shipped |
-| **Landing Honesty Layer** | Explicit `DEMO` verifier badge; zero dead links; strict CSP; zero inline styles. | ✅ Shipped |
-| **Live GSTN Integration** | Direct government e-Way / GSTN portal integration. | 🔜 Roadmap (S4) |
-| **Full OIDC Provider** | Vendor SSO and fine-grained RBAC session management. | 🔜 Roadmap (S4) |
+| Capability | Technical Mechanism | Status |
+|---|---|:---:|
+| **Vendor Registration** | Zod-validated 15-char GSTIN & 10-char PAN with cross-consistency | `✅ Shipped` |
+| **Magic-Byte Gating** | Binary signature inspection (`%PDF-`, `\x89PNG`, `\xFF\xD8\xFF`); blocks `.exe` | `✅ Shipped` |
+| **Envelope Encryption** | Unique 256-bit DEK per document, wrapped via 256-bit Master KEK | `✅ Shipped` |
+| **Masked-PII Storage** | AES-256-GCM at rest (`iv:tag:ciphertext`); API returns `AB******4F` | `✅ Shipped` |
+| **Deterministic Sandbox** | Official Luhn Mod-36 GSTIN check; stamps `evidence.sandbox: true` | `🧪 Sandbox` |
+| **Async Queue & DLQ** | BullMQ + Redis queue with concurrency 2, 3 retries, and dead-letter routing | `✅ Shipped` |
+| **OCR Forgery Detection** | In-memory text extraction; credential mismatches trigger `FLAGGED` state | `✅ Shipped` |
+| **Audited Byte Retrieval** | `GET .../bytes` streams decrypted data and logs an immutable `ADMIN_READ` event | `✅ Shipped` |
+| **Actor Attribution** | `ADMIN_KEYS` JSON mapping attributes actions to `admin:<keyName>` | `✅ Shipped` |
+| **Fail-Closed Boot Guard** | `NODE_ENV=production` without reachable Redis halts boot immediately | `✅ Shipped` |
+| **Landing Honesty Layer** | Explicit `DEMO` badge; zero dead links; strict CSP; zero inline styles | `✅ Shipped` |
+| **Live GSTN Integration** | Production Indian Government tax portal API connectors | `🔜 S4 Roadmap` |
+| **Enterprise OIDC Provider**| Vendor single sign-on & fine-grained RBAC session management | `🔜 S4 Roadmap` |
 
 ---
 
-## 4. Architecture
+## 🏗️ 4. System Architecture
 
-[Client / API] ──► ( Magic-Byte Gating ≤5MB ) ──► [ AES-256-GCM Envelope Encryption ]
-                                                                 │
-                                                       ( Ciphertext on Disk/S3 )
-                                                                 │
-                                                     [ BullMQ Async Queue ]
-                                                                 │
-                                                                 ▼
-[ VerificationEvent (Append-Only) ] ◄── ( RAM Zeroing ) ◄── [ In-Memory Decrypt & OCR ]
+```
+[ Client / API Request ]
+          │
+          ▼
+   ( Magic-Byte Gate ≤5MB ) ──► [ AES-256-GCM Envelope Encryption ]
+                                               │
+                                     ( Ciphertext on Disk/S3 )
+                                               │
+                                   [ BullMQ Asynchronous Queue ]
+                                               │
+                                               ▼
+[ Append-Only VerificationEvent ] ◄── ( RAM Zeroing ) ◄── [ In-Memory Decryption & OCR ]
                                                                  │
                                                     [ GstSandboxAdapter (Mod-36) ]
+```
 
 ---
 
-## 5. State Machines
+## 🔄 5. State Machine & Lifecycle Transitions
 
-### VendorStatus (7 States)
-UNVERIFIED ──(Doc Upload)──► PENDING ──(Verify Trigger)──► IN_PROGRESS
-                                                               │
-        ┌──────────────────────┬───────────────────────────────┴──────────────────────────────┐
-        ▼                      ▼                                                               ▼
-   [ VERIFIED ]           [ FAILED ]                                                     [ FLAGGED ]
-(All 3 Docs Pass)      (Adapter Rejection)                                            (OCR Mismatch)
+### Vendor Verification Lifecycle (7 States)
+```
+UNVERIFIED ──► [ Doc Upload ] ──► PENDING ──► [ Verify Trigger ] ──► IN_PROGRESS
+                                                                          │
+         ┌──────────────────────────────┬─────────────────────────────────┴──────────────────────────────┐
+         ▼                              ▼                                                                ▼
+   [ VERIFIED ]                    [ FAILED ]                                                       [ FLAGGED ]
+(All 3 Docs Pass)               (Checksum Mismatch)                                              (OCR Forgery)
+```
 
-### DocumentStatus (5 States)
-`STORED` ──► `PENDING` ──► `VERIFIED` | `REJECTED` | `FLAGGED`
-
-| Transition | Component / Trigger | Reason |
+| Transition | Originating Component | Verified Business Condition |
 |---|---|---|
-| `UNVERIFIED` → `PENDING` | `POST /api/vendors/:id/documents` | First identity document uploaded. |
-| `PENDING` → `IN_PROGRESS` | `POST .../verify` | Verification job enqueued in BullMQ. |
-| `IN_PROGRESS` → `VERIFIED` | `worker.ts` | All 3 docs (`GST_CERT`, `PAN_CARD`, `BANK_PROOF`) verified. |
-| `IN_PROGRESS` → `FAILED` | `worker.ts` | Invalid GST checksum or corrupted payload. |
-| `IN_PROGRESS` → `FLAGGED` | `ocr/extractor.ts` | Extracted document credential does not match registered vendor. |
+| `UNVERIFIED` → `PENDING` | `POST /api/vendors/:id/documents` | First required identity document successfully ingested. |
+| `PENDING` → `IN_PROGRESS` | `POST .../verify` | Asynchronous verification job enqueued in BullMQ. |
+| `IN_PROGRESS` → `VERIFIED` | `worker.ts` | All 3 documents (`GST_CERT`, `PAN_CARD`, `BANK_PROOF`) cryptographically verified. |
+| `IN_PROGRESS` → `FAILED` | `worker.ts` | Invalid GSTIN checksum or corrupted binary payload. |
+| `IN_PROGRESS` → `FLAGGED` | `ocr/extractor.ts` | Extracted document credential does not match registered vendor PAN/GSTIN. |
 
 ---
 
-## 6. Security Model & Honesty Disclosures
+## 🔐 6. Security Architecture & Disclosures
 
-1. Master KEK (32-byte hex in env) wraps ephemeral DEKs generated per document.
-2. Ciphertext, 12-byte IV, and 16-byte GCM tag stored at rest; plaintext never hits disk.
-3. Decrypted buffers live in RAM during verification and are zeroed (`buffer.fill(0)`) in finally blocks.
-4. PAN is encrypted at rest; zero plaintext columns exist in the database schema.
+```
+[Master KEK (32-byte hex)] ──wraps──► [Document DEK (256-bit)] ──encrypts──► [Ciphertext File]
+```
+1. **Zero Plaintext at Rest**: PAN numbers and document files are encrypted before database insertion.
+2. **Ephemeral Memory Hygiene**: Decrypted buffers live in RAM during verification and are zeroed (`buffer.fill(0)`) in `finally` blocks.
+3. **Timing-Safe Authentication**: API key validation uses `crypto.timingSafeEqual` over fixed-length buffers.
 
-- **🧪 Sandbox Disclosure**: The `GstSandboxAdapter` deterministically validates Luhn Mod-36 checksums but does **not** call live government servers. Production calls are stubbed in `GstnAdapter`.
-- **🔑 Admin Key Placeholder**: `x-admin-key` header with `crypto.timingSafeEqual` is a Slice 1–3 placeholder for full OIDC IdP in Slice 4.
-- **📦 S3 Emulation**: `docker-compose.yml` includes MinIO for local S3 API emulation.
+> ⚠️ **Honesty Disclosures**:
+> - **🧪 Sandbox Mode**: `GstSandboxAdapter` executes official Mod-36 checksums locally and does not query live government servers.
+> - **🔑 API Keys**: `x-admin-key` header is a developer placeholder for the Slice 4 OIDC Identity Provider.
+> - **📦 S3 Storage**: MinIO container in `docker-compose.yml` provides local S3 API parity for development.
 
 ---
 
-## 7. Quickstart
+## 🚀 7. Quickstart Guide
 
-### A. Landing Page (Vite)
+### Option A: Static Landing Page (Vite)
+```bash
 npm install
-npm run dev # http://localhost:5173
+npm run dev # Access UI at http://localhost:5173
+```
 
-### B. Platform API (Next.js 14)
+### Option B: Backend Platform API (Next.js 14)
+```bash
 cd platform
-docker compose up -d # Boots PostgreSQL 15, Redis 7, MinIO
+docker compose up -d # Boot PostgreSQL 15, Redis 7, MinIO
 npm install
 cp .env.example .env
-npm run dev # http://localhost:3001
+npm run dev # API live at http://localhost:3001
+```
 
-#### Step-by-Step API Execution:
-# 1. Check health
+#### Verbatim End-to-End API Walkthrough:
+```bash
+# 1. Health Verification (Public)
 curl -s http://localhost:3001/api/health
 
-# 2. Register Vendor (Returns 201 + masked PAN)
+# 2. Register Vendor (Returns 201 + Masked PAN)
 curl -s -X POST http://localhost:3001/api/vendors \
   -H "Content-Type: application/json" \
   -H "x-admin-key: vc_admin_sec_placeholder_key_32bytes_min" \
   -d '{"legalName":"Acme Defense Labs","gstNumber":"27ABCDE1234F1Z0","panNumber":"ABCDE1234F"}'
 
-# 3. Upload GST Certificate (Returns 201 + Document ID)
+# 3. Ingest GST Certificate (Returns 201 + Document ID)
 curl -s -X POST http://localhost:3001/api/vendors/<VENDOR_ID>/documents \
   -H "x-admin-key: vc_admin_sec_placeholder_key_32bytes_min" \
   -F "type=GST_CERT" \
   -F "file=@sample.pdf"
 
-# 4. Enqueue Verification (Returns 202 Accepted)
+# 4. Trigger Asynchronous Verification (Returns 202 Accepted)
 curl -s -X POST http://localhost:3001/api/vendors/<VENDOR_ID>/documents/<DOC_ID>/verify \
   -H "x-admin-key: vc_admin_sec_placeholder_key_32bytes_min"
 
-# 5. Audited Byte Retrieval (Returns decrypted stream + logs ADMIN_READ)
+# 5. Audited Byte Retrieval (Streams decrypted PDF + appends ADMIN_READ audit event)
 curl -s http://localhost:3001/api/vendors/<VENDOR_ID>/documents/<DOC_ID>/bytes \
-  -H "x-admin-key: vc_admin_sec_placeholder_key_32bytes_min" -o downloaded.pdf
+  -H "x-admin-key: vc_admin_sec_placeholder_key_32bytes_min" -o verified_document.pdf
+```
 
 ---
 
-## 8. Proof & Reproducibility
+## 🧪 8. Proof & Reproducibility
 
-Clean-ref verification guarantees every claim is reproducible on a fresh clone:
+Every performance and security claim is reproducible via an automated clean clone test:
 
+```bash
+# Clean reproduction run from committed git archive
 rm -rf /tmp/vc-clean && mkdir -p /tmp/vc-clean
 git archive HEAD | tar -x -C /tmp/vc-clean
 cd /tmp/vc-clean/platform && npm ci && cp .env.example .env
-npm test # 12 suites, 44 tests green
-npm run build # Compiled successfully (0 errors)
+npm test      # 12 Test Suites, 44/44 Tests Green
+npm run build # Strict Next.js Compilation (Exit Code: 0)
+```
 
-- **Fail-Closed Boot Check**:
+- **Fail-Closed Production Boot Guard**:
+```bash
 NODE_ENV=production node -e "require('./src/lib/queue/boot-check.ts')"
 # Output: {"level":"fatal","msg":"Production boot failed: Redis connection required for BullMQ queue in production (REDIS_URL missing)"}
+```
 
 ---
 
-## 9. Audited Work-Order Protocol
+## 📜 9. Audited Work-Order Protocol
 
-| Phase / Slice | PR / Commit | Primary Milestone | Verification Proof |
+| Phase / Milestone | Commit Reference | Focus Area | Verification Result |
 |---|---|---|---|
-| **Landing P1** | PR #4 (`44677be`) | Trust & Integrity Pass | Labeled DEMO verifier; zero dead links. |
-| **Landing P2** | PR #4 (`d9f6131`) | Conversion Core | Accessible early access capture; 0 PII stored. |
-| **Landing P3** | PR #4 (`2703e09`) | Launch Hardening | Strict CSP; 0 inline styles; 404 & sitemap. |
-| **Module 1 (S1)** | PR #4 (`06a942b`) | Secure Foundation | AES-256-GCM envelope intake; magic bytes. |
-| **Module 1 (S2)** | PR #4 (`c76027d`) | Async Pipeline | Mod-36 GST adapter; BullMQ worker & DLQ. |
-| **Module 1 (S3)** | PR #4 (`8af6762`) | Document Intelligence | OCR forgery detection; audited byte stream. |
+| **Landing Phase 1** | `44677be` | Trust & Integrity Pass | Labeled DEMO verifier; zero dead links. |
+| **Landing Phase 2** | `d9f6131` | Conversion Core | Accessible early-access capture form; 0 PII stored. |
+| **Landing Phase 3** | `2703e09` | Launch Hardening | Strict CSP meta tag; 0 inline styles; 404 & sitemap. |
+| **Module 1 (Slice 1)** | `06a942b` | Secure Foundation | AES-256-GCM envelope intake; magic byte validation. |
+| **Module 1 (Slice 2)** | `c76027d` | Async Pipeline | Mod-36 GST sandbox adapter; BullMQ worker & DLQ. |
+| **Module 1 (Slice 3)** | `8af6762` | Document Intelligence | OCR forgery detection; audited byte streaming. |
 
 ---
 
-## 10. API Reference
+## 📡 10. API Reference
 
-| Method | Route | Guard | Purpose | Status |
-|---|---|---|---|---|
-| `GET` | `/api/health` | Public | System health & build SHA | ✅ Shipped |
-| `POST` | `/api/vendors` | `x-admin-key` | Register vendor with encrypted PAN | ✅ Shipped |
-| `GET` | `/api/vendors/:id` | `x-admin-key` | Retrieve vendor metadata with masked PAN | ✅ Shipped |
-| `POST` | `/api/vendors/:id/documents` | `x-admin-key` | Magic-byte gated document intake | ✅ Shipped |
-| `GET` | `/api/vendors/:id/documents` | `x-admin-key` | List document metadata | ✅ Shipped |
-| `POST` | `/api/vendors/:id/documents/:docId/verify` | `x-admin-key` | Trigger async verification job | ✅ Shipped |
-| `GET` | `/api/vendors/:id/documents/:docId/bytes` | `x-admin-key` | Audited decrypted byte streaming | ✅ Shipped |
-| `GET` | `/api/vendors/:id/verification` | `x-admin-key` | Full audit event timeline | ✅ Shipped |
+| Method | Endpoint | Authorization | Description | Status |
+|---|---|---|---|:---:|
+| `GET` | `/api/health` | Public | Service health & build SHA | `✅ Live` |
+| `POST` | `/api/vendors` | `x-admin-key` | Register vendor with encrypted PAN | `✅ Live` |
+| `GET` | `/api/vendors/:id` | `x-admin-key` | Retrieve vendor profile with masked PAN | `✅ Live` |
+| `POST` | `/api/vendors/:id/documents` | `x-admin-key` | Magic-byte gated encrypted document intake | `✅ Live` |
+| `GET` | `/api/vendors/:id/documents` | `x-admin-key` | List vendor document metadata | `✅ Live` |
+| `POST` | `/api/vendors/:id/documents/:docId/verify` | `x-admin-key` | Trigger async verification worker job | `✅ Live` |
+| `GET` | `/api/vendors/:id/documents/:docId/bytes` | `x-admin-key` | Audited decrypted byte stream (`ADMIN_READ`) | `✅ Live` |
+| `GET` | `/api/vendors/:id/verification` | `x-admin-key` | Retrieve immutable audit timeline | `✅ Live` |
 
 ---
 
-## 11. Threat Model
+## 🛡️ 11. Threat Model & Mitigations
 
-| Threat | Vulnerability | Mitigation Mechanism | File / Location |
+| Threat Vector | Potential Vulnerability | Mitigation Strategy | Implemented In |
 |---|---|---|---|
-| **T1: Malicious Executable Intake** | Attacker renames `.exe` to `.pdf`. | Header magic byte signature inspection (`%PDF-`, `\x89PNG`). | `src/lib/crypto/magic-bytes.ts` |
-| **T2: Database Credential Leak** | SQL dump exposes plaintext PANs. | AES-256-GCM encryption at rest; schema has no plaintext PAN column. | `src/lib/crypto/pan-encryption.ts` |
-| **T3: Timing Attack on Admin Key** | Byte-by-byte timing discrepancy. | `crypto.timingSafeEqual` over fixed-length buffers. | `src/lib/auth.ts` |
-| **T4: Insider Snooping on Docs** | Admins view files without record. | Every read stream logs an immutable `ADMIN_READ` event. | `api/vendors/[id]/documents/[docId]/bytes` |
-| **T5: Credential Forgery** | Document text differs from vendor PAN. | In-memory OCR cross-check flags mismatches to `FLAGGED`. | `src/lib/ocr/extractor.ts` |
-| **T6: Queue Loss in Outage** | Production queue crashes silently. | Fail-closed boot check enforces active Redis in production. | `src/lib/queue/boot-check.ts` |
-| **T7: Rapid Bot Submissions** | Automated spam on early access form. | Honeypot field + 3-second minimum-time-to-submit guard. | `js/app.js` |
-| **T8: XSS & Resource Injection** | Script injection in landing DOM. | Strict meta Content Security Policy + zero inline scripts. | `index.html` |
+| **T1: Disguised Executables** | Malicious binary disguised as PDF | Strict magic byte signature inspection (`%PDF-`, `\x89PNG`) | `src/lib/crypto/magic-bytes.ts` |
+| **T2: Database Breach** | SQL exfiltration leaks plaintext PANs | AES-256-GCM encryption at rest; no plaintext PAN column | `src/lib/crypto/pan-encryption.ts` |
+| **T3: Timing Attacks** | Side-channel inspection on API key | `crypto.timingSafeEqual` comparison on fixed-length buffers | `src/lib/auth.ts` |
+| **T4: Unauthorized Document Peeking** | Admin views documents without record | Every read stream logs an immutable `ADMIN_READ` event | `api/vendors/.../bytes/route.ts` |
+| **T5: Identity Forgery** | Document text differs from vendor PAN | In-memory OCR cross-check flags mismatches to `FLAGGED` | `src/lib/ocr/extractor.ts` |
+| **T6: Queue Outage Data Loss** | Production queue fails silently | Fail-closed boot check enforces Redis connection in production | `src/lib/queue/boot-check.ts` |
+| **T7: Automated Form Spam** | Bot floods early access form | Honeypot field + 3-second minimum-time-to-submit guard | `js/app.js` |
+| **T8: XSS & Script Injection** | Malicious payload injected in DOM | Strict Content Security Policy (`default-src 'self'`) | `index.html` |
 
 ---
 
-## 12. Roadmap
+## 🗺️ 12. Strategic Roadmap
 
-- **Slice 4 (Upcoming)**: Live GSTN/NSDL government API connectors, production OIDC IdP provider, image OCR worker.
+- **Slice 4 (Upcoming)**: Production GSTN & NSDL government API connectors, enterprise OIDC IdP integration.
 - **Module 2**: Automated CycloneDX SBOM generation via Syft + Cosign container image signing.
-- **Module 3**: Claude AI contextual vulnerability scoring (1–10) & OPA Rego policy firewall.
+- **Module 3**: Claude AI contextual vulnerability risk scoring (1–10) & OPA Rego policy firewall.
 - **Module 4**: Private Hyperledger Fabric immutable audit ledger commit.
 
 ---
 
-## 13. License & Disclaimer
+## ⚖️ 13. License & Disclaimer
 
-- **License**: Released under the MIT License.
-- **Disclaimer**: This is a portfolio reference build. The verification engine runs in **Sandbox Mode** using deterministic Mod-36 checksum mathematical validation and does not submit queries to official Indian tax authorities.
-```
+- **License**: Distributed under the MIT License.
+- **Disclaimer**: This software is an enterprise reference build. The verification engine executes in **Sandbox Mode** using mathematical Luhn Mod-36 validation and does not interact with live Indian Government tax servers.
