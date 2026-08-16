@@ -7,16 +7,16 @@
 ╚═══════════════════════════════════════════════════════════════════════════════════╝
 ```
 
-> **Framework:** Next.js 14 & Vite 5 &nbsp;|&nbsp; **Language:** TypeScript (Strict) &nbsp;|&nbsp; **Storage:** PostgreSQL 15 & Redis 7 &nbsp;|&nbsp; **Tests:** 44/44 Green &nbsp;|&nbsp; **License:** MIT
+> **Framework:** Next.js 14 & Vite 5  |  **Language:** TypeScript (Strict)  |  **Storage:** PostgreSQL 15 & Redis 7  |  **Tests:** 44/44 Green  |  **License:** MIT
 
 ---
 
 ## ⚡ 1. Problem → Answer
 
-**The Vulnerability of Assumed Trust**  
+**The Vulnerability of Assumed Trust**
 Modern B2B software supply chains operate on blind faith. Vendors upload unauthenticated tax certificates, sensitive permanent account numbers (PANs) reside unencrypted in object storage, and internal platform administrators possess unrestricted, unaudited access to raw identity files. A single forged document or insider breach compromises the entire enterprise perimeter.
 
-**The Zero-Trust Architecture**  
+**The Zero-Trust Architecture**
 VendorChain terminates assumed trust at the intake perimeter:
 - 🔒 **Cryptographic Ingestion**: Files are inspected by raw magic byte signatures, encrypted via dedicated AES-256-GCM envelope keys before touching disk, and cross-referenced against official credentials using in-memory OCR extraction.
 - 📐 **Deterministic Validation**: Verification executes mathematically via the Indian GSTIN Luhn Mod-36 algorithm inside an asynchronous queue with automatic retries and dead-letter fault isolation.
@@ -24,7 +24,13 @@ VendorChain terminates assumed trust at the intake perimeter:
 
 ---
 
-## 📂 2. Repository Blueprint
+## 🎯 2. Problem Statement & Project Scope
+
+
+<img width="1748" height="663" alt="image" src="https://github.com/user-attachments/assets/d0876eea-f5d1-4c40-9adc-3c91a4cf35a4" />
+<img width="1442" height="1009" alt="image" src="https://github.com/user-attachments/assets/f432e7b2-37db-4564-b70a-162343034294" />
+
+## 📂 3. Repository Blueprint
 
 ```
 landing-page-/
@@ -34,6 +40,7 @@ landing-page-/
 ├── ⚡ js/app.js                  # Labeled DEMO Verifier & Early Access Capture Pipeline
 ├── 📋 CHANGELOG.md               # Phased Verification Changelog
 ├── 🔐 SECURITY.md                # Production Headers & CSP Implementation Guide
+├── 🖼️ assets/                    # README diagrams (problem-scope.svg, architecture.svg)
 └── 🏢 platform/                  # Core Zero-Trust Onboarding Engine (Module 1, Slices 1–3)
     ├── 🐳 docker-compose.yml     # PostgreSQL 15 + Redis 7 + MinIO (S3 Emulation)
     ├── 🗄️ prisma/schema.prisma   # Vendor, Document, and VerificationEvent Schemas
@@ -44,7 +51,7 @@ landing-page-/
 
 ---
 
-## 📊 3. Feature Matrix
+## 📊 4. Feature Matrix
 
 | Capability | Technical Mechanism | Status |
 |---|---|:---:|
@@ -64,7 +71,7 @@ landing-page-/
 
 ---
 
-## 🏗️ 4. System Architecture
+## 🏗️ 5. System Architecture
 
 ```
 [ Client / API Request ]
@@ -84,7 +91,7 @@ landing-page-/
 
 ---
 
-## 🔄 5. State Machine & Lifecycle Transitions
+## 🔄 6. State Machine & Lifecycle Transitions
 
 ### Vendor Verification Lifecycle (7 States)
 ```
@@ -106,7 +113,7 @@ UNVERIFIED ──► [ Doc Upload ] ──► PENDING ──► [ Verify Trigger
 
 ---
 
-## 🔐 6. Security Architecture & Disclosures
+## 🔐 7. Security Architecture & Disclosures
 
 ```
 [Master KEK (32-byte hex)] ──wraps──► [Document DEK (256-bit)] ──encrypts──► [Ciphertext File]
@@ -122,7 +129,7 @@ UNVERIFIED ──► [ Doc Upload ] ──► PENDING ──► [ Verify Trigger
 
 ---
 
-## 🚀 7. Quickstart Guide
+## 🚀 8. Quickstart Guide
 
 ### Option A: Static Landing Page (Vite)
 ```bash
@@ -167,7 +174,7 @@ curl -s http://localhost:3001/api/vendors/<VENDOR_ID>/documents/<DOC_ID>/bytes \
 
 ---
 
-## 🧪 8. Proof & Reproducibility
+## 🧪 9. Proof & Reproducibility
 
 Every performance and security claim is reproducible via an automated clean clone test:
 
@@ -188,7 +195,7 @@ NODE_ENV=production node -e "require('./src/lib/queue/boot-check.ts')"
 
 ---
 
-## 📜 9. Audited Work-Order Protocol
+## 📜 10. Audited Work-Order Protocol
 
 | Phase / Milestone | Commit Reference | Focus Area | Verification Result |
 |---|---|---|---|
@@ -201,7 +208,7 @@ NODE_ENV=production node -e "require('./src/lib/queue/boot-check.ts')"
 
 ---
 
-## 📡 10. API Reference
+## 📡 11. API Reference
 
 | Method | Endpoint | Authorization | Description | Status |
 |---|---|---|---|:---:|
@@ -216,7 +223,7 @@ NODE_ENV=production node -e "require('./src/lib/queue/boot-check.ts')"
 
 ---
 
-## 🛡️ 11. Threat Model & Mitigations
+## 🛡️ 12. Threat Model & Mitigations
 
 | Threat Vector | Potential Vulnerability | Mitigation Strategy | Implemented In |
 |---|---|---|---|
@@ -231,7 +238,7 @@ NODE_ENV=production node -e "require('./src/lib/queue/boot-check.ts')"
 
 ---
 
-## 🗺️ 12. Strategic Roadmap
+## 🗺️ 13. Strategic Roadmap
 
 - **Slice 4 (Upcoming)**: Production GSTN & NSDL government API connectors, enterprise OIDC IdP integration.
 - **Module 2**: Automated CycloneDX SBOM generation via Syft + Cosign container image signing.
@@ -240,7 +247,7 @@ NODE_ENV=production node -e "require('./src/lib/queue/boot-check.ts')"
 
 ---
 
-## ⚖️ 13. License & Disclaimer
+## ⚖️ 14. License & Disclaimer
 
 - **License**: Distributed under the MIT License.
 - **Disclaimer**: This software is an enterprise reference build. The verification engine executes in **Sandbox Mode** using mathematical Luhn Mod-36 validation and does not interact with live Indian Government tax servers.
