@@ -173,21 +173,6 @@ curl -s http://localhost:3001/api/vendors/<VENDOR_ID>/documents/<DOC_ID>/bytes \
   -H "x-admin-key: vc_admin_sec_placeholder_key_32bytes_min" -o verified_document.pdf
 ```
 
----
-
-## 🧪 9. Proof & Reproducibility
-
-Every performance and security claim is reproducible via an automated clean clone test:
-
-```bash
-# Clean reproduction run from committed git archive
-rm -rf /tmp/vc-clean && mkdir -p /tmp/vc-clean
-git archive HEAD | tar -x -C /tmp/vc-clean
-cd /tmp/vc-clean/platform && npm ci && cp .env.example .env
-npm test      # 12 Test Suites, 44/44 Tests Green
-npm run build # Strict Next.js Compilation (Exit Code: 0)
-```
-
 - **Fail-Closed Production Boot Guard**:
 ```bash
 NODE_ENV=production node -e "require('./src/lib/queue/boot-check.ts')"
@@ -206,21 +191,6 @@ NODE_ENV=production node -e "require('./src/lib/queue/boot-check.ts')"
 | **Module 1 (Slice 1)** | `06a942b` | Secure Foundation | AES-256-GCM envelope intake; magic byte validation. |
 | **Module 1 (Slice 2)** | `c76027d` | Async Pipeline | Mod-36 GST sandbox adapter; BullMQ worker & DLQ. |
 | **Module 1 (Slice 3)** | `8af6762` | Document Intelligence | OCR forgery detection; audited byte streaming. |
-
----
-
-## 📡 11. API Reference
-
-| Method | Endpoint | Authorization | Description | Status |
-|---|---|---|---|:---:|
-| `GET` | `/api/health` | Public | Service health & build SHA | `✅ Live` |
-| `POST` | `/api/vendors` | `x-admin-key` | Register vendor with encrypted PAN | `✅ Live` |
-| `GET` | `/api/vendors/:id` | `x-admin-key` | Retrieve vendor profile with masked PAN | `✅ Live` |
-| `POST` | `/api/vendors/:id/documents` | `x-admin-key` | Magic-byte gated encrypted document intake | `✅ Live` |
-| `GET` | `/api/vendors/:id/documents` | `x-admin-key` | List vendor document metadata | `✅ Live` |
-| `POST` | `/api/vendors/:id/documents/:docId/verify` | `x-admin-key` | Trigger async verification worker job | `✅ Live` |
-| `GET` | `/api/vendors/:id/documents/:docId/bytes` | `x-admin-key` | Audited decrypted byte stream (`ADMIN_READ`) | `✅ Live` |
-| `GET` | `/api/vendors/:id/verification` | `x-admin-key` | Retrieve immutable audit timeline | `✅ Live` |
 
 ---
 
