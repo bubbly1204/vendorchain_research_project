@@ -12,6 +12,7 @@
 [Open Obsidian Note](obsidian://open?vault=Bruce&file=Block%20Chain%20-%20Security%2FVendor%20Chain.canvas)
 To open this note in Obsidian, copy and paste the following URL into your browser:
 `obsidian://open?vault=Bruce&file=Block%20Chain%20-%20Security%2FVendor%20Chain.canvas`
+<a href="obsidian://open?vault=Bruce&file=Block%20Chain%20-%20Security%2FVendor%20Chain.canvas">Open in Obsidian</a>
 
 ## ⚡ 1. Problem → Answer
 
