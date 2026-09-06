@@ -10,7 +10,7 @@
 > **Framework:** Next.js 14 & Vite 5  |  **Language:** TypeScript (Strict)  |  **Storage:** PostgreSQL 15 & Redis 7  |  **Tests:** 44/44 Green  |  **License:** MIT
 
 ---
-# Obsididan URL : [obsidian://open?vault=Bruce&file=Block%20Chain%20-%20Security%2FVendor%20Chain.canvas](url)
+Obsididan URL : [obsidian://open?vault=Bruce&file=Block%20Chain%20-%20Security%2FVendor%20Chain.canvas](url)
 
 ## ⚡ 1. Problem → Answer
 
