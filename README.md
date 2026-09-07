@@ -51,25 +51,6 @@ landing-page-/
 
 ---
 
-## 📊 4. Feature Matrix
-
-| Capability | Technical Mechanism | Status |
-|---|---|:---:|
-| **Vendor Registration** | Zod-validated 15-char GSTIN & 10-char PAN with cross-consistency | `✅ Shipped` |
-| **Magic-Byte Gating** | Binary signature inspection (`%PDF-`, `\x89PNG`, `\xFF\xD8\xFF`); blocks `.exe` | `✅ Shipped` |
-| **Envelope Encryption** | Unique 256-bit DEK per document, wrapped via 256-bit Master KEK | `✅ Shipped` |
-| **Masked-PII Storage** | AES-256-GCM at rest (`iv:tag:ciphertext`); API returns `AB******4F` | `✅ Shipped` |
-| **Deterministic Sandbox** | Official Luhn Mod-36 GSTIN check; stamps `evidence.sandbox: true` | `🧪 Sandbox` |
-| **Async Queue & DLQ** | BullMQ + Redis queue with concurrency 2, 3 retries, and dead-letter routing | `✅ Shipped` |
-| **OCR Forgery Detection** | In-memory text extraction; credential mismatches trigger `FLAGGED` state | `✅ Shipped` |
-| **Audited Byte Retrieval** | `GET .../bytes` streams decrypted data and logs an immutable `ADMIN_READ` event | `✅ Shipped` |
-| **Actor Attribution** | `ADMIN_KEYS` JSON mapping attributes actions to `admin:<keyName>` | `✅ Shipped` |
-| **Fail-Closed Boot Guard** | `NODE_ENV=production` without reachable Redis halts boot immediately | `✅ Shipped` |
-| **Landing Honesty Layer** | Explicit `DEMO` badge; zero dead links; strict CSP; zero inline styles | `✅ Shipped` |
-| **Live GSTN Integration** | Production Indian Government tax portal API connectors | `🔜 S4 Roadmap` |
-| **Enterprise OIDC Provider**| Vendor single sign-on & fine-grained RBAC session management | `🔜 S4 Roadmap` |
-
----
 
 ## 🏗️ 5. System Architecture
 
@@ -208,16 +189,3 @@ NODE_ENV=production node -e "require('./src/lib/queue/boot-check.ts')"
 
 ---
 
-## 🗺️ 13. Strategic Roadmap
-
-- **Slice 4 (Upcoming)**: Production GSTN & NSDL government API connectors, enterprise OIDC IdP integration.
-- **Module 2**: Automated CycloneDX SBOM generation via Syft + Cosign container image signing.
-- **Module 3**: Claude AI contextual vulnerability risk scoring (1–10) & OPA Rego policy firewall.
-- **Module 4**: Private Hyperledger Fabric immutable audit ledger commit.
-
----
-
-## ⚖️ 14. License & Disclaimer
-
-- **License**: Distributed under the MIT License.
-- **Disclaimer**: This software is an enterprise reference build. The verification engine executes in **Sandbox Mode** using mathematical Luhn Mod-36 validation and does not interact with live Indian Government tax servers.
